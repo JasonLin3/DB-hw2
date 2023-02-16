@@ -73,16 +73,41 @@ Parses a single json file. Currently, there's a loop that iterates over each
 item in the data set. Your job is to extend this functionality to create all
 of the necessary SQL tables for your database.
 """
-def parseJson(json_file):
+def parseJson(json_file, f_items, f_users, f_bids, f_categories):
     with open(json_file, 'r') as f:
         items = loads(f.read())['Items'] # creates a Python dictionary of Items for the supplied json file
+        formatted_items = []
+        formatted_users = []
+        formatted_bids = []
+        formatted_categories = []
+        count = 0
         for item in items:
             """
             TODO: traverse the items dictionary to extract information from the
             given `json_file' and generate the necessary .dat files to generate
             the SQL tables based on your relation design
             """
-            pass
+            # ITEMS
+            buy_price = item['Buy_Price'] if 'Buy_Price' in item else 'NULL'
+            description = '"{0}"'.format(item['Description'].strip().replace('\"', '\"\"')) if item['Description'] else 'NULL'
+            item_attributes = [
+                item['ItemID'],
+                item['Seller']['UserID'],
+                '"{0}"'.format(item['Name'].strip().replace('\"', '\"\"')),
+                transformDollar(item['Currently']),
+                buy_price,
+                transformDttm(item['Started']),
+                transformDttm(item['Ends']),
+                transformDollar(item['First_Bid']),
+                item['Number_of_Bids'],
+                description
+            ]
+            
+
+            formatted_items.append("|".join(item_attributes))
+        f_items.write("\n".join(formatted_items))
+
+
 
 """
 Loops through each json files provided on the command line and passes each file
@@ -92,11 +117,24 @@ def main(argv):
     if len(argv) < 2:
         print >> sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>'
         sys.exit(1)
+
+    # open files
+    f_items = open("item.dat","w")
+    f_users = open("users.dat","w")
+    f_bids = open("bids.dat","w")
+    f_categories = open("categories.dat","w")
+
     # loops over all .json files in the argument
     for f in argv[1:]:
         if isJson(f):
-            parseJson(f)
-            print "Success parsing " + f
+            parseJson(f,f_items, f_users, f_bids, f_categories)
+            # print "Success parsing " + f
+
+    f_items.close()
+    f_users.close()
+    f_bids.close()
+    f_categories.close()
+
 
 if __name__ == '__main__':
     main(sys.argv)
