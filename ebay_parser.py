@@ -102,10 +102,43 @@ def parseJson(json_file, f_items, f_users, f_bids, f_categories):
                 item['Number_of_Bids'],
                 description
             ]
-            
-
             formatted_items.append("|".join(item_attributes))
+
+            # USERS
+            user_attributes = [
+                item['Seller']['UserID'],
+                item['Seller']['Rating'],
+                item['Location'],
+                item['Country']
+            ]
+            formatted_users.append("|".join(user_attributes))
+
+            # BIDS
+            if item['Bids']:
+                for bid in item['Bids']:
+                    # print(bid)
+                    bids_attributes = [
+                        bid['Bid']['Bidder']['UserID'],
+                        item['ItemID'],
+                        transformDttm(bid['Bid']['Time']),
+                        transformDollar(bid['Bid']['Amount'])
+                    ]
+                    formatted_bids.append("|".join(bids_attributes))
+
+
+            # CATEGORIES
+            if item['Category']:
+                for category in item['Category']:
+                    category_attributes = [
+                        category,
+                        item['ItemID']
+                    ]
+                    formatted_categories.append("|".join(category_attributes))
+
         f_items.write("\n".join(formatted_items))
+        f_users.write("\n".join(formatted_users))
+        f_bids.write("\n".join(formatted_bids))
+        f_categories.write("\n".join(formatted_categories))
 
 
 
