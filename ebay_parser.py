@@ -108,15 +108,15 @@ def parseJson(json_file, f_items, f_users, f_bids, f_categories):
             user_attributes = [
                 item['Seller']['UserID'],
                 item['Seller']['Rating'],
-                item['Location'],
-                item['Country']
+                '"{0}"'.format(item['Location'].strip().replace('\"', '\"\"')),
+                '"{0}"'.format(item['Country'].strip().replace('\"', '\"\"'))
             ]
             formatted_users.append("|".join(user_attributes))
 
             # BIDS
-            if item['Bids']:
+            if item['Bids'] != None and len(item['Bids']) > 0:
                 for bid in item['Bids']:
-                    # print(bid)
+                    # add to bids
                     bids_attributes = [
                         bid['Bid']['Bidder']['UserID'],
                         item['ItemID'],
@@ -124,6 +124,17 @@ def parseJson(json_file, f_items, f_users, f_bids, f_categories):
                         transformDollar(bid['Bid']['Amount'])
                     ]
                     formatted_bids.append("|".join(bids_attributes))
+                    # add to users
+                    location = bid['Bid']['Bidder']['Location'] if 'Location' in bid['Bid']['Bidder'] else 'NULL' 
+                    country = bid['Bid']['Bidder']['Country'] if 'Country' in bid['Bid']['Bidder'] else 'NULL' 
+                    user_attributes = [
+                        bid['Bid']['Bidder']['UserID'],
+                        bid['Bid']['Bidder']['Rating'],
+                        '"{0}"'.format(location.strip().replace('\"', '\"\"')),
+                        '"{0}"'.format(country.strip().replace('\"', '\"\"')),
+                    ]
+                    formatted_users.append("|".join(user_attributes))
+
 
 
             # CATEGORIES
@@ -136,9 +147,14 @@ def parseJson(json_file, f_items, f_users, f_bids, f_categories):
                     formatted_categories.append("|".join(category_attributes))
 
         f_items.write("\n".join(formatted_items))
+        f_items.write("\n")
         f_users.write("\n".join(formatted_users))
+        f_users.write("\n")
         f_bids.write("\n".join(formatted_bids))
+        if len(formatted_bids) > 0:
+            f_bids.write("\n")
         f_categories.write("\n".join(formatted_categories))
+        f_categories.write("\n")
 
 
 
@@ -153,9 +169,9 @@ def main(argv):
 
     # open files
     f_items = open("item.dat","w")
-    f_users = open("users.dat","w")
-    f_bids = open("bids.dat","w")
-    f_categories = open("categories.dat","w")
+    f_users = open("user.dat","w")
+    f_bids = open("bid.dat","w")
+    f_categories = open("category.dat","w")
 
     # loops over all .json files in the argument
     for f in argv[1:]:

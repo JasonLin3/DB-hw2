@@ -5,4 +5,3 @@ update Item set buy_price = null where buy_price = 'NULL';
 update User set Location = null where Location = 'NULL';
 update User set Country = null where Country = 'NULL';
 .import bid.dat Bid
-update Bid set buy_price = null where buy_price = 'NULL';
